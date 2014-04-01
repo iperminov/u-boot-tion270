@@ -3597,6 +3597,16 @@ Configuration Settings:
 - CONFIG_SYS_FLASH_USE_BUFFER_WRITE
 		Use buffered writes to flash.
 
+- CONFIG_SYS_FLASH_WRITE_UNALIGNED
+		The cfi_flash driver expects source data being written to flash
+		are properly aligned. In some cases, such as TFTP/NFS transfer
+		directly to flash, the data are passed to the driver from the
+		network packet buffer and can be unaligned.
+		This setting enables accurate access to source data to avoid
+		crashing on architectures, which don't support unaligned access.
+		Note that it doesn't lead to noticeable performance penalties,
+		so as writing to flash is the significantly slower operation.
+
 - CONFIG_FLASH_SPANSION_S29WS_N
 		s29ws-n MirrorBit flash has non-standard addresses for buffered
 		write commands.

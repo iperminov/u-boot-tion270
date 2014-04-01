@@ -168,7 +168,8 @@ store_block(int block, uchar *src, unsigned len)
 		/* start address in flash? */
 		if (flash_info[i].flash_id == FLASH_UNKNOWN)
 			continue;
-		if (load_addr + offset >= flash_info[i].start[0]) {
+		if (load_addr + offset >= flash_info[i].start[0] &&
+				load_addr + offset < flash_info[i].start[0] + flash_info[i].size) {
 			rc = 1;
 			break;
 		}

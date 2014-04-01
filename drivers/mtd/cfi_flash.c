@@ -161,6 +161,52 @@ u64 flash_read64(void *addr)__attribute__((weak, alias("__flash_read64")));
 #define flash_read64	__flash_read64
 #endif
 
+#ifdef CONFIG_SYS_FLASH_WRITE_UNALIGNED
+
+static u8 flash_src_read8(const void *addr)
+{
+	return get_unaligned((const u8 *)addr);
+}
+
+static u16 flash_src_read16(const void *addr)
+{
+	return get_unaligned((const u16 *)addr);
+}
+
+static u32 flash_src_read32(const void *addr)
+{
+	return get_unaligned((const u32 *)addr);
+}
+
+static u64 flash_src_read64(const void *addr)
+{
+	return get_unaligned((const u64 *)addr);
+}
+
+#else
+
+static u8 flash_src_read8(const void *addr)
+{
+	return *(u8 *)addr;
+}
+
+static u16 flash_src_read16(const void *addr)
+{
+	return *(u16 *)addr;
+}
+
+static u32 flash_src_read32(const void *addr)
+{
+	return *(u32 *)addr;
+}
+
+static u64 flash_src_read64(const void *addr)
+{
+	return *(u64 *)addr;
+}
+
+#endif /* CONFIG_SYS_FLASH_WRITE_UNALIGNED */
+
 /*-----------------------------------------------------------------------
  */
 #if defined(CONFIG_ENV_IS_IN_FLASH) || defined(CONFIG_ENV_ADDR_REDUND) || (CONFIG_SYS_MONITOR_BASE >= CONFIG_SYS_FLASH_BASE)
@@ -658,16 +704,16 @@ static int flash_status_poll(flash_info_t *info, void *src, void *dst,
 	while (1) {
 		switch (info->portwidth) {
 		case FLASH_CFI_8BIT:
-			ready = flash_read8(dst) == flash_read8(src);
+			ready = flash_read8(dst) == flash_src_read8(src);
 			break;
 		case FLASH_CFI_16BIT:
-			ready = flash_read16(dst) == flash_read16(src);
+			ready = flash_read16(dst) == flash_src_read16(src);
 			break;
 		case FLASH_CFI_32BIT:
-			ready = flash_read32(dst) == flash_read32(src);
+			ready = flash_read32(dst) == flash_src_read32(src);
 			break;
 		case FLASH_CFI_64BIT:
-			ready = flash_read64(dst) == flash_read64(src);
+			ready = flash_read64(dst) == flash_src_read64(src);
 			break;
 		default:
 			ready = 0;
@@ -885,23 +931,23 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp,
 	while ((cnt-- > 0) && (flag == 1)) {
 		switch (info->portwidth) {
 		case FLASH_CFI_8BIT:
-			flag = ((flash_read8(dst2) & flash_read8(src)) ==
-				flash_read8(src));
+			flag = ((flash_read8(dst2) & flash_src_read8(src)) ==
+				flash_src_read8(src));
 			src += 1, dst2 += 1;
 			break;
 		case FLASH_CFI_16BIT:
-			flag = ((flash_read16(dst2) & flash_read16(src)) ==
-				flash_read16(src));
+			flag = ((flash_read16(dst2) & flash_src_read16(src)) ==
+				flash_src_read16(src));
 			src += 2, dst2 += 2;
 			break;
 		case FLASH_CFI_32BIT:
-			flag = ((flash_read32(dst2) & flash_read32(src)) ==
-				flash_read32(src));
+			flag = ((flash_read32(dst2) & flash_src_read32(src)) ==
+				flash_src_read32(src));
 			src += 4, dst2 += 4;
 			break;
 		case FLASH_CFI_64BIT:
-			flag = ((flash_read64(dst2) & flash_read64(src)) ==
-				flash_read64(src));
+			flag = ((flash_read64(dst2) & flash_src_read64(src)) ==
+				flash_src_read64(src));
 			src += 8, dst2 += 8;
 			break;
 		}
@@ -934,19 +980,19 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp,
 			while (cnt-- > 0) {
 				switch (info->portwidth) {
 				case FLASH_CFI_8BIT:
-					flash_write8(flash_read8(src), dst);
+					flash_write8(flash_src_read8(src), dst);
 					src += 1, dst += 1;
 					break;
 				case FLASH_CFI_16BIT:
-					flash_write16(flash_read16(src), dst);
+					flash_write16(flash_src_read16(src), dst);
 					src += 2, dst += 2;
 					break;
 				case FLASH_CFI_32BIT:
-					flash_write32(flash_read32(src), dst);
+					flash_write32(flash_src_read32(src), dst);
 					src += 4, dst += 4;
 					break;
 				case FLASH_CFI_64BIT:
-					flash_write64(flash_read64(src), dst);
+					flash_write64(flash_src_read64(src), dst);
 					src += 8, dst += 8;
 					break;
 				default:
@@ -977,25 +1023,25 @@ static int flash_write_cfibuffer (flash_info_t * info, ulong dest, uchar * cp,
 		switch (info->portwidth) {
 		case FLASH_CFI_8BIT:
 			while (cnt-- > 0) {
-				flash_write8(flash_read8(src), dst);
+				flash_write8(flash_src_read8(src), dst);
 				src += 1, dst += 1;
 			}
 			break;
 		case FLASH_CFI_16BIT:
 			while (cnt-- > 0) {
-				flash_write16(flash_read16(src), dst);
+				flash_write16(flash_src_read16(src), dst);
 				src += 2, dst += 2;
 			}
 			break;
 		case FLASH_CFI_32BIT:
 			while (cnt-- > 0) {
-				flash_write32(flash_read32(src), dst);
+				flash_write32(flash_src_read32(src), dst);
 				src += 4, dst += 4;
 			}
 			break;
 		case FLASH_CFI_64BIT:
 			while (cnt-- > 0) {
-				flash_write64(flash_read64(src), dst);
+				flash_write64(flash_src_read64(src), dst);
 				src += 8, dst += 8;
 			}
 			break;

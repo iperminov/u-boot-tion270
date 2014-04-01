@@ -78,14 +78,17 @@ store_block(uchar *src, unsigned offset, unsigned len)
 
 	for (i = 0; i < CONFIG_SYS_MAX_FLASH_BANKS; i++) {
 		/* start address in flash? */
-		if (load_addr + offset >= flash_info[i].start[0]) {
+		if (flash_info[i].flash_id == FLASH_UNKNOWN)
+			continue;
+		if (load_addr + offset >= flash_info[i].start[0] &&
+				load_addr + offset < flash_info[i].start[0] + flash_info[i].size) {
 			rc = 1;
 			break;
 		}
 	}
 
 	if (rc) { /* Flash is destination for this packet */
-		rc = flash_write((uchar *)src, (ulong)(load_addr+offset), len);
+		rc = flash_write((char *)src, (ulong)(load_addr+offset), len);
 		if (rc) {
 			flash_perror(rc);
 			return -1;
