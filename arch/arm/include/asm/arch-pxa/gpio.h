@@ -44,4 +44,17 @@ static inline int gpio_set_value(unsigned gpio, int value) {
 	return 0;
 }
 
+static inline void _pxa2xx_mfp_config(unsigned pin, unsigned af, unsigned output, int drive_high) {
+	unsigned gafr_shift = (pin & 0x0F) * 2;
+	writel((readl(GAFR(pin)) & ~(0x03 << gafr_shift)) | ((af & 0x03) << gafr_shift), GAFR(pin));
+	if (output)
+		gpio_direction_output(pin, drive_high);
+	else
+		gpio_direction_input(pin);
+}
+
+static inline void pxa2xx_mfp_config(unsigned md) {
+	_pxa2xx_mfp_config(md & GPIO_MD_MASK_NR, (md & GPIO_MD_MASK_FN) >> 8, md & GPIO_MD_MASK_DIR, 0);
+}
+
 #endif /* __ASM_PXA_GPIO_H__ */
