@@ -13,6 +13,7 @@
 #include <asm/arch/hardware.h>
 #include <asm/arch/regs-mmc.h>
 #include <asm/arch/pxa.h>
+#include <asm/arch/gpio.h>
 #include <netdev.h>
 #include <asm/io.h>
 #include <serial.h>
@@ -74,6 +75,13 @@ int board_mmc_init(bd_t *bis)
 
 int board_usb_init(int index, enum usb_init_type init)
 {
+	/*
+	 * GPIO 88:  AF1 In         - USBH1 PWR
+	 * GPIO 89:  AF2 Out (low)  - USBH1 PEN
+	 */
+	pxa2xx_mfp_config(88 | GPIO_ALT_FN_1_IN);
+	pxa2xx_mfp_config(89 | GPIO_ALT_FN_2_OUT);
+
 	writel((readl(UHCHR) | UHCHR_PCPL | UHCHR_PSPL) &
 		~(UHCHR_SSEP0 | UHCHR_SSEP1 | UHCHR_SSEP2 | UHCHR_SSE),
 		UHCHR);
@@ -121,6 +129,10 @@ int usb_board_stop(void)
 	udelay(10);
 
 	writel(readl(CKEN) & ~CKEN10_USBHOST, CKEN);
+
+	/* Cleanup USB MFP assignments. */
+	pxa2xx_mfp_config(88 | GPIO_IN);
+	pxa2xx_mfp_config(89 | GPIO_IN);
 
 	return 0;
 }
